@@ -3,6 +3,8 @@ import Layout from './components/layout/Layout'
 import HomePage from './pages/HomePage'
 import ListingsPage from './pages/ListingsPage'
 import PropertyDetailPage from './pages/PropertyDetailPage'
+import AboutPage from './pages/AboutPage'
+import ContactPage from './pages/ContactPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Admin
@@ -21,10 +23,12 @@ export default function App() {
         <Route index element={<HomePage />} />
         <Route path="listings" element={<ListingsPage />} />
         <Route path="listings/:id" element={<PropertyDetailPage />} />
+        <Route path="about" element={<AboutPage />} />
+        <Route path="contact" element={<ContactPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
 
-      {/* Admin login (not protected) */}
+      {/* Admin login */}
       <Route path="/admin/login" element={<LoginPage />} />
 
       {/* Admin panel (protected) */}

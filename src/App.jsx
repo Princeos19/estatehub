@@ -5,6 +5,9 @@ import ListingsPage from './pages/ListingsPage'
 import PropertyDetailPage from './pages/PropertyDetailPage'
 import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
+import SignUpPage from './pages/SignUpPage'
+import SignInPage from './pages/SignInPage'
+import FavouritesPage from './pages/FavouritesPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Admin
@@ -25,13 +28,16 @@ export default function App() {
         <Route path="listings/:id" element={<PropertyDetailPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="contact" element={<ContactPage />} />
+        <Route path="sign-up" element={<SignUpPage />} />
+        <Route path="sign-in" element={<SignInPage />} />
+        <Route path="favourites" element={<FavouritesPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
 
       {/* Admin login */}
       <Route path="/admin/login" element={<LoginPage />} />
 
-      {/* Admin panel (protected) */}
+      {/* Admin panel */}
       <Route
         path="/admin"
         element={

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Save, X } from 'lucide-react'
 import { getListingById, createListing, updateListing } from '../../lib/api'
+import ImageUploader from '../../components/admin/ImageUploader'
 
 const EMPTY_FORM = {
   title: '',
@@ -14,7 +15,7 @@ const EMPTY_FORM = {
   area: '',
   type: 'House',
   status: 'For Sale',
-  image: '',
+  images: [],
   description: '',
   featured: false,
   year: new Date().getFullYear(),
@@ -47,7 +48,6 @@ export default function ListingFormPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  // If editing, load existing listing into form
   useEffect(() => {
     if (!isEditing) return
 
@@ -63,7 +63,7 @@ export default function ListingFormPage() {
         area: listing.area || '',
         type: listing.type || 'House',
         status: listing.status || 'For Sale',
-        image: listing.image || '',
+        images: listing.images?.length ? listing.images : listing.image ? [listing.image] : [],
         description: listing.description || '',
         featured: listing.featured || false,
         year: listing.year || new Date().getFullYear(),
@@ -81,7 +81,6 @@ export default function ListingFormPage() {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  // Auto-generate price_label from price input
   const handlePriceChange = (e) => {
     const val = e.target.value
     const num = parseFloat(val)
@@ -92,9 +91,19 @@ export default function ListingFormPage() {
     }))
   }
 
+  const handleImagesChange = (urls) => {
+    setForm((prev) => ({ ...prev, images: urls }))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (form.images.length === 0) {
+      setError('Please upload at least one image.')
+      return
+    }
+
     setLoading(true)
 
     const payload = {
@@ -104,7 +113,8 @@ export default function ListingFormPage() {
       bathrooms: parseInt(form.bathrooms),
       area: parseInt(form.area),
       year: parseInt(form.year),
-      images: [form.image],
+      image: form.images[0],       // first image = main image
+      images: form.images,
     }
 
     try {
@@ -184,7 +194,7 @@ export default function ListingFormPage() {
           <div className="grid grid-cols-2 gap-4">
             <Field label="Property Type" required>
               <select className="select-field" value={form.type} onChange={set('type')}>
-                {['House','Apartment','Villa','Commercial'].map((t) => <option key={t}>{t}</option>)}
+                {['House', 'Apartment', 'Villa', 'Commercial'].map((t) => <option key={t}>{t}</option>)}
               </select>
             </Field>
             <Field label="Status" required>
@@ -231,17 +241,15 @@ export default function ListingFormPage() {
           </div>
         </div>
 
-        {/* Media */}
+        {/* Images — now using uploader */}
         <div className="bg-white rounded-xl p-6 shadow-card flex flex-col gap-4">
-          <p className="text-sm font-bold text-brand-text border-b border-brand-gray-3 pb-3">Media</p>
-          <Field label="Main Image URL" required hint="Paste a direct image URL (e.g. from Unsplash)">
-            <input type="url" required className="input-field" placeholder="https://images.unsplash.com/..." value={form.image} onChange={set('image')} />
-          </Field>
-          {form.image && (
-            <div className="rounded-xl overflow-hidden aspect-video mt-1">
-              <img src={form.image} alt="Preview" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
-            </div>
-          )}
+          <p className="text-sm font-bold text-brand-text border-b border-brand-gray-3 pb-3">
+            Photos <span className="text-red-400">*</span>
+          </p>
+          <ImageUploader
+            images={form.images}
+            onChange={handleImagesChange}
+          />
         </div>
 
         {/* Description */}
@@ -282,6 +290,7 @@ export default function ListingFormPage() {
           </button>
           <Link to="/admin/listings" className="btn-secondary">Cancel</Link>
         </div>
+
       </form>
     </div>
   )

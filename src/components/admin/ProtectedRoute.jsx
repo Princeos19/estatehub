@@ -1,0 +1,20 @@
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
+
+export default function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-brand-gray">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-brand-green border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-brand-text-3">Checking authentication…</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) return <Navigate to="/admin/login" replace />
+  return children
+}

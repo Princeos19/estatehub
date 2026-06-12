@@ -11,8 +11,8 @@ export default async function handler(req) {
     const RESEND_API_KEY = process.env.RESEND_API_KEY
 
     const toEmail = type === 'enquiry'
-      ? (agentEmail || 'hello@estatehub.com')
-      : 'hello@estatehub.com'
+  ? (agentEmail || 'oseiprince991@gmail.com')
+  : 'oseiprince991@gmail.com'
 
     const emailSubject = type === 'enquiry'
       ? `New Property Enquiry — ${propertyTitle}`

@@ -1,27 +1,12 @@
 import { useState } from 'react'
 import { MapPin, Phone, Mail, Clock, Send, Check } from 'lucide-react'
+import { sendContactEmail } from '../lib/email'
 
 const contactInfo = [
-  {
-    icon: MapPin,
-    title: 'Visit Us',
-    lines: ['12345 Opeasi Dhaisi Road', 'East Legon, Accra, Ghana'],
-  },
-  {
-    icon: Phone,
-    title: 'Call Us',
-    lines: ['+233 (0)30 000 0001', '+233 (0)24 000 0002'],
-  },
-  {
-    icon: Mail,
-    title: 'Email Us',
-    lines: ['hello@estatehub.com', 'support@estatehub.com'],
-  },
-  {
-    icon: Clock,
-    title: 'Working Hours',
-    lines: ['Mon – Fri: 8:00am – 6:00pm', 'Sat: 9:00am – 3:00pm'],
-  },
+  { icon: MapPin, title: 'Visit Us', lines: ['12345 Opeasi Dhaisi Road', 'East Legon, Accra, Ghana'] },
+  { icon: Phone, title: 'Call Us', lines: ['+233 (0)30 000 0001', '+233 (0)24 000 0002'] },
+  { icon: Mail, title: 'Email Us', lines: ['hello@estatehub.com', 'support@estatehub.com'] },
+  { icon: Clock, title: 'Working Hours', lines: ['Mon – Fri: 8:00am – 6:00pm', 'Sat: 9:00am – 3:00pm'] },
 ]
 
 const offices = [
@@ -34,23 +19,28 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
 
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    // Simulate sending — in production, wire to an email service
-    setTimeout(() => {
-      setLoading(false)
+    setError('')
+    try {
+      await sendContactEmail(form)
       setSent(true)
-    }, 1200)
+    } catch (err) {
+      setError('Failed to send message. Please try again.')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="pt-16 min-h-screen bg-white">
-
-      {/* ── Hero ── */}
+      {/* Hero */}
       <div className="bg-brand-text">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-20">
           <p className="text-xs font-semibold text-brand-green uppercase tracking-widest mb-4">Get in touch</p>
@@ -61,7 +51,7 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* ── Contact info cards ── */}
+      {/* Info cards */}
       <section className="max-w-7xl mx-auto px-4 md:px-8 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {contactInfo.map(({ icon: Icon, title, lines }) => (
@@ -70,22 +60,18 @@ export default function ContactPage() {
                 <Icon size={18} className="text-brand-green" />
               </div>
               <h3 className="font-bold text-brand-text text-sm mb-2">{title}</h3>
-              {lines.map((line) => (
-                <p key={line} className="text-sm text-brand-text-3">{line}</p>
-              ))}
+              {lines.map((line) => <p key={line} className="text-sm text-brand-text-3">{line}</p>)}
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Form + map ── */}
+      {/* Form + map */}
       <section className="max-w-7xl mx-auto px-4 md:px-8 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-
-          {/* Contact form */}
           <div>
             <h2 className="text-2xl font-bold text-brand-text mb-2">Send us a message</h2>
-            <p className="text-brand-text-3 text-sm mb-8">We'll get back to you within 24 hours.</p>
+            <p className="text-brand-text-3 text-sm mb-8">We&apos;ll get back to you within 24 hours.</p>
 
             {sent ? (
               <div className="bg-green-50 border border-green-200 rounded-2xl p-10 flex flex-col items-center text-center gap-4">
@@ -105,6 +91,9 @@ export default function ContactPage() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">{error}</div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-brand-text-2 mb-1.5">Full Name <span className="text-red-400">*</span></label>
@@ -115,7 +104,6 @@ export default function ContactPage() {
                     <input required type="email" placeholder="you@email.com" className="input-field" value={form.email} onChange={set('email')} />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-brand-text-2 mb-1.5">Phone</label>
@@ -134,19 +122,10 @@ export default function ContactPage() {
                     </select>
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-xs font-semibold text-brand-text-2 mb-1.5">Message <span className="text-red-400">*</span></label>
-                  <textarea
-                    required
-                    rows={6}
-                    placeholder="Tell us how we can help you…"
-                    className="input-field resize-none"
-                    value={form.message}
-                    onChange={set('message')}
-                  />
+                  <textarea required rows={6} placeholder="Tell us how we can help you…" className="input-field resize-none" value={form.message} onChange={set('message')} />
                 </div>
-
                 <button type="submit" disabled={loading} className="btn-primary gap-2 self-start disabled:opacity-60">
                   {loading
                     ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -160,14 +139,8 @@ export default function ContactPage() {
 
           {/* Map + offices */}
           <div className="flex flex-col gap-6">
-            {/* Map placeholder */}
             <div className="rounded-2xl overflow-hidden aspect-[4/3] relative bg-brand-gray-3">
-              <img
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&q=80"
-                alt="Map"
-                className="w-full h-full object-cover opacity-80"
-              />
-              {/* Pin */}
+              <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&q=80" alt="Map" className="w-full h-full object-cover opacity-80" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-white rounded-xl shadow-card-hover px-4 py-3 flex items-center gap-2">
                   <div className="w-8 h-8 bg-brand-green rounded-full flex items-center justify-center">
@@ -180,8 +153,6 @@ export default function ContactPage() {
                 </div>
               </div>
             </div>
-
-            {/* Office locations */}
             <div>
               <h3 className="font-bold text-brand-text mb-4">Our Offices</h3>
               <div className="flex flex-col gap-3">
@@ -202,7 +173,6 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-
     </div>
   )
 }
